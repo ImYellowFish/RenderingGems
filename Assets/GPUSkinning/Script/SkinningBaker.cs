@@ -37,6 +37,28 @@ public class SkinningBaker : MonoBehaviour {
 
 		clip.SampleAnimation(target, 0);
 	}
+    
+    [System.Serializable]
+    public class DebugBoneStat
+    {
+        [System.Serializable]
+        public class boneData
+        {
+            public Vector4[] frames;
+        }
+
+        public boneData[] bones;
+
+        public DebugBoneStat(int sampleCount, int boneCount)
+        {
+            bones = new boneData[boneCount];
+
+            for(int i = 0; i < boneCount; i++)
+            {
+                bones[i] = new boneData() { frames = new Vector4[sampleCount] };
+            }
+        }
+    }
 
     [ContextMenu("Bake")]
 	public void Bake(){
@@ -47,24 +69,32 @@ public class SkinningBaker : MonoBehaviour {
         int boneCount = srenderer.bones.Length;
 
         Texture2D texTsl = new Texture2D(boneCount, samples, TextureFormat.RGBA32, false);
-		Texture2D texRot = new Texture2D(boneCount, samples, TextureFormat.RGBA32, false);
+        Texture2D texRot = new Texture2D(boneCount, samples, TextureFormat.RGBA32, false);
+
+        DebugBoneStat stat = new DebugBoneStat(samples, boneCount);
 
 		for(int frame = 0; frame < samples; frame++){
-			float t = Mathf.Clamp(frame * sampleInterval, 0, length);
+			float t = Mathf.Clamp((float)frame * sampleInterval, 0, length);
 			clip.SampleAnimation(target, t);
-
-			for(int b = 0; b < boneCount; b++){
-				var matrix = srenderer.bones[b].localToWorldMatrix * srenderer.sharedMesh.bindposes[b];
-				Vector3 translation = matrix.GetColumn(3);
-				Quaternion rotation = Quaternion.LookRotation(matrix.GetColumn(2), matrix.GetColumn(1));
-
+            
+            for(int b = 0; b < boneCount; b++){
+				var bonematrix = srenderer.bones[b].localToWorldMatrix * srenderer.sharedMesh.bindposes[b];
+                Matrix4x4 matrix = target.transform.worldToLocalMatrix * bonematrix;
+                Vector3 translation = matrix.GetColumn(3);
+				Quaternion rotation = GetQuaternionFromMatrix(matrix);
+                
 				texTsl.SetPixel(b, frame, EncodeTranslation(translation));
 				texRot.SetPixel(b, frame, EncodeQuaternion(rotation));
+
+                stat.bones[b].frames[frame] = new Vector4(rotation.x, rotation.y, rotation.z, rotation.w);
 			}
 		}
 
 		texTsl.Apply();
 		texRot.Apply();
+
+        var json = JsonUtility.ToJson(stat, true);
+        File.WriteAllText("Assets/debug_bones.txt", json);
 
         string texTslPath = texSavePath + "texTsl.png";
         string texRotPath = texSavePath + "texRot.png";
@@ -83,6 +113,19 @@ public class SkinningBaker : MonoBehaviour {
 		result.b = rot.z * 0.5f + 0.5f;
 		return result;
 	}
+
+    private Quaternion GetQuaternionFromMatrix(Matrix4x4 m)
+    {
+        Quaternion q = new Quaternion();
+        q.w = Mathf.Sqrt(Mathf.Max(0, 1 + m[0, 0] + m[1, 1] + m[2, 2])) / 2;
+        q.x = Mathf.Sqrt(Mathf.Max(0, 1 + m[0, 0] - m[1, 1] - m[2, 2])) / 2;
+        q.y = Mathf.Sqrt(Mathf.Max(0, 1 - m[0, 0] + m[1, 1] - m[2, 2])) / 2;
+        q.z = Mathf.Sqrt(Mathf.Max(0, 1 - m[0, 0] - m[1, 1] + m[2, 2])) / 2;
+        q.x *= Mathf.Sign(q.x * (m[2, 1] - m[1, 2]));
+        q.y *= Mathf.Sign(q.y * (m[0, 2] - m[2, 0]));
+        q.z *= Mathf.Sign(q.z * (m[1, 0] - m[0, 1]));
+        return q;
+    }
 
     [ContextMenu("BakeMesh")]
     public void BakeMesh()
@@ -149,18 +192,19 @@ public class SkinningBaker : MonoBehaviour {
 
         return c;
     }
-    
+
     // assume pos range from -8 ~ 8
+    private static readonly float MAX_POS_COORD = 8f;
     private Color EncodeTranslation(Vector3 pos){
-		AssertAbsLessThan(pos.x, 8f, "pos.x overflows!");
-		AssertAbsLessThan(pos.y, 8f, "pos.y overflows!");
-		AssertAbsLessThan(pos.z, 8f, "pos.z overflows!");
+		AssertAbsLessThan(pos.x, MAX_POS_COORD, "pos.x overflows!");
+		AssertAbsLessThan(pos.y, MAX_POS_COORD, "pos.y overflows!");
+		AssertAbsLessThan(pos.z, MAX_POS_COORD, "pos.z overflows!");
 
 		Color result;
-		result.a = 8f / 256f;
-		result.r = (pos.x + 8f) / 16f;
-		result.g = (pos.y + 8f) / 16f;
-		result.b = (pos.z + 8f) / 16f;
+		result.a = MAX_POS_COORD / 256f;
+		result.r = pos.x / MAX_POS_COORD / 2 + 0.5f;
+		result.g = pos.y / MAX_POS_COORD / 2 + 0.5f;
+		result.b = pos.z / MAX_POS_COORD / 2 + 0.5f;
 
         return result;
 	}
