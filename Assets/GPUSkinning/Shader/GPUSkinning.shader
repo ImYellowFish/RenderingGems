@@ -17,6 +17,8 @@
 
 		Pass
 		{
+			Cull Off
+
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
@@ -38,6 +40,7 @@
 				float2 uv : TEXCOORD0;
 				UNITY_FOG_COORDS(1)
 				float4 vertex : SV_POSITION;
+				float4 color : TEXCOORD2;
 			};
 
 			sampler2D _MainTex;
@@ -58,15 +61,15 @@
 			}
 
 			inline float3 Translate(float3 vertex, fixed4 c_tsl) {
-				//return vertex + (c_tsl.xyz - 0.5) * 16;
-				return vertex;
+				return vertex + (c_tsl.xyz - 0.5) * 4;
+				// return vertex;
 			}
 
 			v2f vert (appdata v)
 			{
 				float4 animUV;
-				animUV.x = v.color.r * 127.0 / _TexWidth;
-				animUV.y = _Time.y * _FrameRate / _TexHeight;
+				animUV.x = (v.color.r * 32.0) / _TexWidth;
+				animUV.y = (_Time.y * _FrameRate - 0.5) / _TexHeight;
 				animUV.zw = 0;
 
 				fixed4 c_tsl = tex2Dlod(_TslTex, animUV);
@@ -79,6 +82,8 @@
 				v2f o;
 				o.vertex = UnityObjectToClipPos(pos);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+				o.color = c_tsl;
+
 				UNITY_TRANSFER_FOG(o,o.vertex);
 				return o;
 			}
@@ -86,7 +91,9 @@
 			fixed4 frag (v2f i) : SV_Target
 			{
 				// sample the texture
-				fixed4 col = tex2D(_MainTex, i.uv);
+				// fixed4 col = tex2D(_MainTex, i.uv);
+				fixed4 col = i.color;
+
 				// apply fog
 				UNITY_APPLY_FOG(i.fogCoord, col);
 				return col;

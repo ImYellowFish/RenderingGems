@@ -44,7 +44,13 @@ public class SkinningBaker : MonoBehaviour {
         [System.Serializable]
         public class boneData
         {
-            public Vector4[] frames;
+            [System.NonSerialized]
+            public Vector4[] rotations;
+
+            public Vector4[] positions;
+
+            [System.NonSerialized]
+            public Matrix4x4[] matrices;
         }
 
         public boneData[] bones;
@@ -55,7 +61,7 @@ public class SkinningBaker : MonoBehaviour {
 
             for(int i = 0; i < boneCount; i++)
             {
-                bones[i] = new boneData() { frames = new Vector4[sampleCount] };
+                bones[i] = new boneData() { positions = new Vector4[sampleCount], rotations = new Vector4[sampleCount], matrices = new Matrix4x4[sampleCount] };
             }
         }
     }
@@ -65,8 +71,9 @@ public class SkinningBaker : MonoBehaviour {
 #if UNITY_EDITOR
         float length = clip.length;
 		int samples = Mathf.CeilToInt(length * sampleRate);
-		float sampleInterval = 1 / sampleRate;
+		float sampleInterval = 1f / sampleRate;
         int boneCount = srenderer.bones.Length;
+        Debug.Log("Sample count: " + samples);
 
         Texture2D texTsl = new Texture2D(boneCount, samples, TextureFormat.RGBA32, false);
         Texture2D texRot = new Texture2D(boneCount, samples, TextureFormat.RGBA32, false);
@@ -75,26 +82,30 @@ public class SkinningBaker : MonoBehaviour {
 
 		for(int frame = 0; frame < samples; frame++){
 			float t = Mathf.Clamp((float)frame * sampleInterval, 0, length);
+            Debug.Log("time: " + t);
 			clip.SampleAnimation(target, t);
-            
+
             for(int b = 0; b < boneCount; b++){
-				var bonematrix = srenderer.bones[b].localToWorldMatrix * srenderer.sharedMesh.bindposes[b];
+                var bonematrix = srenderer.bones[b].localToWorldMatrix * srenderer.sharedMesh.bindposes[b];
                 Matrix4x4 matrix = target.transform.worldToLocalMatrix * bonematrix;
-                Vector3 translation = matrix.GetColumn(3);
-				Quaternion rotation = GetQuaternionFromMatrix(matrix);
+                Vector4 translation = matrix.GetColumn(3);
+                Quaternion rotation = GetQuaternionFromMatrix(matrix);
                 
 				texTsl.SetPixel(b, frame, EncodeTranslation(translation));
 				texRot.SetPixel(b, frame, EncodeQuaternion(rotation));
 
-                stat.bones[b].frames[frame] = new Vector4(rotation.x, rotation.y, rotation.z, rotation.w);
-			}
+                stat.bones[b].rotations[frame] = new Vector4(rotation.x, rotation.y, rotation.z, rotation.w);
+                stat.bones[b].positions[frame] = new Vector4(translation.x, translation.y, translation.z, translation.w);
+                stat.bones[b].matrices[frame] = matrix;
+                Debug.Log(srenderer.bones[b].position);
+            }
 		}
 
 		texTsl.Apply();
 		texRot.Apply();
 
         var json = JsonUtility.ToJson(stat, true);
-        File.WriteAllText("Assets/debug_bones.txt", json);
+        File.WriteAllText(texSavePath + "debug_json.txt", json);
 
         string texTslPath = texSavePath + "texTsl.png";
         string texRotPath = texSavePath + "texRot.png";
@@ -142,6 +153,7 @@ public class SkinningBaker : MonoBehaviour {
         {
             var bw = oldMesh.boneWeights[i];
             colors[i] = GetImportantBoneWeight(bw);
+            Debug.Log("c: " + colors[i]);
         }
         mesh.colors = colors;
         
@@ -185,12 +197,17 @@ public class SkinningBaker : MonoBehaviour {
         weight1 = tmpBw[1].weight / totalWeight;
 
         Color c;
-        c.r = index0 / 127.0f;
+        c.r = EncodeBoneIndex(index0);
         c.g = weight0;
-        c.b = index1 / 127.0f;
+        c.b = EncodeBoneIndex(index1);
         c.a = weight1;
 
         return c;
+    }
+
+    private float EncodeBoneIndex(int index)
+    {
+        return (index + 0.5f) / 32.0f;
     }
 
     // assume pos range from -8 ~ 8
@@ -201,7 +218,7 @@ public class SkinningBaker : MonoBehaviour {
 		AssertAbsLessThan(pos.z, MAX_POS_COORD, "pos.z overflows!");
 
 		Color result;
-		result.a = MAX_POS_COORD / 256f;
+		result.a = 1f;
 		result.r = pos.x / MAX_POS_COORD / 2 + 0.5f;
 		result.g = pos.y / MAX_POS_COORD / 2 + 0.5f;
 		result.b = pos.z / MAX_POS_COORD / 2 + 0.5f;
