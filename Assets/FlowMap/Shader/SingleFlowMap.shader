@@ -1,4 +1,4 @@
-﻿Shader "Unlit/SingleFlowMap"
+﻿Shader "RGem/SingleFlowMap"
 {
 	Properties
 	{

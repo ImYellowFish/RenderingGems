@@ -1,4 +1,4 @@
-﻿Shader "Unlit/GPUSkinning"
+﻿Shader "RGem/GPUSkinning"
 {
 	Properties
 	{

@@ -1,4 +1,4 @@
-﻿Shader "Unlit/ShowVertexColor"
+﻿Shader "RGem/ShowVertexColor"
 {
 	Properties
 	{

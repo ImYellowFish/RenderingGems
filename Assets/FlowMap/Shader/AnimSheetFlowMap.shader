@@ -1,4 +1,4 @@
-﻿Shader "Unlit/AnimSheetFlowMap"
+﻿Shader "RGem/AnimSheetFlowMap"
 {
 	Properties
 	{
