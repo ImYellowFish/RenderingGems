@@ -1,0 +1,251 @@
+fileFormatVersion: 2
+guid: 4b30b6efeac921040862fbc4ff1499d3
+timeCreated: 1532439244
+licenseType: Free
+ModelImporter:
+  serializedVersion: 22
+  fileIDToRecycleName:
+    100000: 3DSMesh_0_0
+    100002: 3DSMesh_10_4
+    100004: 3DSMesh_11_5
+    100006: 3DSMesh_12_5
+    100008: 3DSMesh_13_6
+    100010: 3DSMesh_14_6
+    100012: 3DSMesh_15_7
+    100014: 3DSMesh_18_9
+    100016: 3DSMesh_19_9
+    100018: 3DSMesh_1_1
+    100020: 3DSMesh_20_10
+    100022: 3DSMesh_2_1
+    100024: 3DSMesh_3_1
+    100026: 3DSMesh_4_2
+    100028: 3DSMesh_5_2
+    100030: 3DSMesh_5_2_Detached
+    100032: 3DSMesh_5_2_Detached_Detached
+    100034: 3DSMesh_6_2
+    100036: 3DSMesh_7_2
+    100038: 3DSMesh_7_2_Detached
+    100040: 3DSMesh_8_3
+    100042: 3DSMesh_9_3
+    100044: Bean Bag
+    100046: beanbag
+    100048: group
+    100050: Light Cruiser Tenryuu
+    100052: Null
+    100054: PointLight
+    100056: polySurface2
+    100058: SpotLight
+    100060: SpotLight1
+    100062: SpotLight2
+    100064: //RootNode
+    400000: 3DSMesh_0_0
+    400002: 3DSMesh_10_4
+    400004: 3DSMesh_11_5
+    400006: 3DSMesh_12_5
+    400008: 3DSMesh_13_6
+    400010: 3DSMesh_14_6
+    400012: 3DSMesh_15_7
+    400014: 3DSMesh_18_9
+    400016: 3DSMesh_19_9
+    400018: 3DSMesh_1_1
+    400020: 3DSMesh_20_10
+    400022: 3DSMesh_2_1
+    400024: 3DSMesh_3_1
+    400026: 3DSMesh_4_2
+    400028: 3DSMesh_5_2
+    400030: 3DSMesh_5_2_Detached
+    400032: 3DSMesh_5_2_Detached_Detached
+    400034: 3DSMesh_6_2
+    400036: 3DSMesh_7_2
+    400038: 3DSMesh_7_2_Detached
+    400040: 3DSMesh_8_3
+    400042: 3DSMesh_9_3
+    400044: Bean Bag
+    400046: beanbag
+    400048: group
+    400050: Light Cruiser Tenryuu
+    400052: Null
+    400054: PointLight
+    400056: polySurface2
+    400058: SpotLight
+    400060: SpotLight1
+    400062: SpotLight2
+    400064: //RootNode
+    2100000: b0b0b0
+    2100002: VRayMtl
+    2100004: Material1
+    2100006: Tex-Head Acc
+    2100008: GlowTex-Eyep
+    2100010: Clothes-Skin
+    2100012: SPECULAR
+    2100014: TeethTex-Fac
+    2100016: EyepatchTex-
+    2100018: Material2
+    2100020: Face-Eyes On
+    2100022: Material3
+    2100024: ClothesTex-U
+    2100026: SwordTex-Swo
+    2100028: Clothes-coll
+    2100030: SheathTex-Sh
+    2100032: TongueTex-Fa
+    2100034: Black SkirtT
+    2100036: FaceTex-Face
+    2100038: Lower BodyTe
+    2100040: Tex-HairTex-
+    2300000: 3DSMesh_0_0
+    2300002: 3DSMesh_10_4
+    2300004: 3DSMesh_11_5
+    2300006: 3DSMesh_12_5
+    2300008: 3DSMesh_13_6
+    2300010: 3DSMesh_14_6
+    2300012: 3DSMesh_15_7
+    2300014: 3DSMesh_18_9
+    2300016: 3DSMesh_19_9
+    2300018: 3DSMesh_1_1
+    2300020: 3DSMesh_20_10
+    2300022: 3DSMesh_2_1
+    2300024: 3DSMesh_3_1
+    2300026: 3DSMesh_4_2
+    2300028: 3DSMesh_5_2
+    2300030: 3DSMesh_5_2_Detached
+    2300032: 3DSMesh_5_2_Detached_Detached
+    2300034: 3DSMesh_6_2
+    2300036: 3DSMesh_7_2
+    2300038: 3DSMesh_7_2_Detached
+    2300040: 3DSMesh_8_3
+    2300042: 3DSMesh_9_3
+    2300044: beanbag
+    2300046: polySurface2
+    3300000: 3DSMesh_0_0
+    3300002: 3DSMesh_10_4
+    3300004: 3DSMesh_11_5
+    3300006: 3DSMesh_12_5
+    3300008: 3DSMesh_13_6
+    3300010: 3DSMesh_14_6
+    3300012: 3DSMesh_15_7
+    3300014: 3DSMesh_18_9
+    3300016: 3DSMesh_19_9
+    3300018: 3DSMesh_1_1
+    3300020: 3DSMesh_20_10
+    3300022: 3DSMesh_2_1
+    3300024: 3DSMesh_3_1
+    3300026: 3DSMesh_4_2
+    3300028: 3DSMesh_5_2
+    3300030: 3DSMesh_5_2_Detached
+    3300032: 3DSMesh_5_2_Detached_Detached
+    3300034: 3DSMesh_6_2
+    3300036: 3DSMesh_7_2
+    3300038: 3DSMesh_7_2_Detached
+    3300040: 3DSMesh_8_3
+    3300042: 3DSMesh_9_3
+    3300044: beanbag
+    3300046: polySurface2
+    4300000: polySurface2
+    4300002: beanbag
+    4300004: 3DSMesh_7_2_Detached
+    4300006: 3DSMesh_11_5
+    4300008: 3DSMesh_8_3
+    4300010: 3DSMesh_14_6
+    4300012: 3DSMesh_0_0
+    4300014: 3DSMesh_12_5
+    4300016: 3DSMesh_9_3
+    4300018: 3DSMesh_5_2_Detached
+    4300020: 3DSMesh_5_2
+    4300022: 3DSMesh_5_2_Detached_Detached
+    4300024: 3DSMesh_6_2
+    4300026: 3DSMesh_1_1
+    4300028: 3DSMesh_19_9
+    4300030: 3DSMesh_3_1
+    4300032: 3DSMesh_20_10
+    4300034: 3DSMesh_4_2
+    4300036: 3DSMesh_15_7
+    4300038: 3DSMesh_7_2
+    4300040: 3DSMesh_13_6
+    4300042: 3DSMesh_10_4
+    4300044: 3DSMesh_2_1
+    4300046: 3DSMesh_18_9
+    9500000: //RootNode
+    10800000: PointLight
+    10800002: SpotLight
+    10800004: SpotLight1
+    10800006: SpotLight2
+  externalObjects: {}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    preserveHierarchy: 0
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
