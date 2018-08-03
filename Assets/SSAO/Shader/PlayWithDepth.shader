@@ -32,6 +32,7 @@
 				UNITY_FOG_COORDS(1)
 				float4 vertex : SV_POSITION;
 				float depth : TEXCOORD1;
+				float4 viewPos : TEXCOORD2;
 			};
 
 			sampler2D _MainTex;
@@ -43,11 +44,12 @@
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-
+				
 				float4 depth_pos;
 
 				float4 viewPos = mul(UNITY_MATRIX_MV, v.vertex);
-				
+				o.viewPos = viewPos;
+
 				float4 viewPosTueak = viewPos + float4(0, 0, 1, 0);
 				float4 glProjPos = mul(unity_CameraProjection, viewPosTueak);
 				
@@ -79,8 +81,9 @@
 			{
 				// hpos z
 				float hpos_z = i.depth;
+				hpos_z = -i.viewPos.z;
 				hpos_z = hpos_z * _DepthMag;
-				hpos_z = hpos_z * 0.5 + 0.5;
+				// hpos_z = hpos_z * 0.5 + 0.5;
 				return float4(hpos_z, hpos_z, hpos_z, 1);
 			}
 			ENDCG

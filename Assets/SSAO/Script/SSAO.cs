@@ -5,8 +5,10 @@ using UnityEngine;
 public class SSAO : MonoBehaviour {
     public Material occlusionMat;
     public Material blurMat;
+    public Material compositionMat;
     public Vector4[] kernel;
     public int kernelCount = 16;
+    public bool debug = false;
 
     private void Update()
     {
@@ -19,9 +21,20 @@ public class SSAO : MonoBehaviour {
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
         RenderTexture occlusion_raw = RenderTexture.GetTemporary(Screen.width, Screen.height);
+        RenderTexture blurred = RenderTexture.GetTemporary(Screen.width, Screen.height);
         Graphics.Blit(source, occlusion_raw, occlusionMat);
-        Graphics.Blit(occlusion_raw, destination, blurMat);
+        Graphics.Blit(occlusion_raw, blurred, blurMat);
+        if (debug)
+        {
+            Graphics.Blit(blurred, destination);
+        }
+        else
+        {
+            compositionMat.SetTexture("_OcclusionTex", blurred);
+            Graphics.Blit(source, destination, compositionMat);
+        }
         RenderTexture.ReleaseTemporary(occlusion_raw);
+        RenderTexture.ReleaseTemporary(blurred);
     }
 
     [ContextMenu("Generate")]

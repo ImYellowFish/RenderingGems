@@ -65,11 +65,11 @@
 				// float d2 = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv);
 				// return float4(d2, d2, d2, 1) * _AOStrength;
 
-				float eyeDepth = LinearEyeDepth(depth);
-
+				float eyeDepth = depth * _ProjectionParams.z;
+				
 				float4 hpos;
 				hpos.xy = i.uv * 2 - 1;
-				hpos.z = depth;
+				hpos.z = -eyeDepth;
 				hpos.w = 1;
 
 				// view space position
@@ -78,7 +78,7 @@
 				float2 p13_31 = float2(unity_CameraProjection._13, unity_CameraProjection._23);
 				// float4 origin = float4((hpos.xy - p13_31) / p11_22 * depth, depth, 1);
 				float4 origin = float4((hpos.xy - p13_31) / p11_22 * eyeDepth, -eyeDepth, 1);
-
+				
 				// calculate view to tangent space transform
 				float3 noiseDir = float3(frac(i.uv.x * 3711 + i.uv.y * 1179) * 2 - 1, 
 					frac(i.uv.x * 4123 *1 + i.uv.y * 4233 + 0.124312) * 2 - 1, 0);
@@ -104,15 +104,15 @@
 					// project sample position
 					float4 projSamplePos = mul(unity_CameraProjection, float4(samplePos, 1.0));
 					float2 sampleUV = projSamplePos.xy / projSamplePos.w * 0.5 + 0.5;
-					sampleUV.xy = 1 - sampleUV.xy;
+					//sampleUV.xy = 1 - sampleUV.xy;
 					
 					float occlusionDepth;
 					float3 sampleNormal;
 					DecodeDepthNormal(tex2D(_CameraDepthNormalsTexture, sampleUV),
 						occlusionDepth, sampleNormal);
 
-					occlusionDepth = LinearEyeDepth(occlusionDepth);
-					//float td = occlusionDepth * 80;
+					occlusionDepth = occlusionDepth * _ProjectionParams.z;
+					float td = occlusionDepth / 15;
 					//return float4(td, td, td, 1);
 
 					// float td = samplePos.z * 80;
@@ -120,7 +120,7 @@
 
 					
 					float depthRangeCheck = abs(occlusionDepth - eyeDepth) < _DepthCheckOffset ? 1.0 : 0.0;
-					occlusion += (occlusionDepth + _OcclusionOffset <= samplePos.z ? 1.0 : 0.0) * depthRangeCheck;
+					occlusion += (occlusionDepth + _OcclusionOffset <= (-samplePos.z) ? 1.0 : 0.0) * depthRangeCheck;
 
 					/*fixed4 col_debug = 1;
 					col_debug.rgb = sampleOffset;

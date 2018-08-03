@@ -51,11 +51,11 @@
 						float2 blurUV = input.uv;
 						blurUV.x += (i - 1.5) * _BlurSizeX;
 						blurUV.y += (j - 1.5) * _BlurSizeY;
-						float weight = 0.075 / ((i - 1.5) * (i - 1.5) + (j - 1.5) * (j - 1.5));
+						float weight = 0.12 / ((i - 1.5) * (i - 1.5) + (j - 1.5) * (j - 1.5));
 						col = tex2D(_MainTex, blurUV) * weight + col;
 					}
 				}
-				return tex2D(_MainTex, input.uv);
+				//return tex2D(_MainTex, input.uv);
 				return col;
 			}
 			ENDCG
