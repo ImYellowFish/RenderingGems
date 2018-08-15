@@ -7,6 +7,9 @@
 		_DepthCheckOffset ("Depth Check Offset", Float) = 1
 		_OcclusionOffset("Occlusion Offset", Range(-0.5, 0.5)) = 0
 		_AOStrength("AO strength", Float) = 1
+		_Contrast("Contrast", Float) = 1
+		[Toggle]_GBuffer("Use GBuffer", Int) = 0
+		[Toggle]_Morgan("Use Mogan Estimator", Int) = 0
 	}
 	SubShader
 	{
@@ -16,6 +19,8 @@
 		Pass
 		{
 			CGPROGRAM
+			#pragma shader_feature _GBUFFER_ON
+			#pragma shader_feature _MORGAN_ON
 			#pragma vertex vert
 			#pragma fragment frag
 			#define KERNEL_SIZE 16
@@ -45,43 +50,77 @@
 			sampler2D _MainTex;
 			sampler2D _CameraDepthTexture;
 			sampler2D _CameraDepthNormalsTexture;
+			sampler2D _CameraGBufferTexture2;
 			float _KernelRadius;
 			float _DepthCheckOffset;
 			float _OcclusionOffset;
 			float _AOStrength;
+			float _Contrast;
 
 			float4 _Kernel[KERNEL_SIZE];
+
+			// Boundary check for depth sampler
+			// (returns a very large value if it lies out of bounds)
+			float CheckBounds(float2 uv, float d)
+			{
+				float ob = any(uv < 0) + any(uv > 1);
+				#if defined(UNITY_REVERSED_Z)
+					ob += (d <= 0.00001);
+				#else
+					ob += (d >= 0.99999);
+				#endif
+				return ob * 1e8;
+			}
+
+			float GetViewDepthNormal(float2 uv, out float3 viewNormal) {
+				#if defined(_GBUFFER_ON)
+					float depth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, uv);
+					fixed4 packedNormal = tex2D(_CameraGBufferTexture2, uv);
+					float3 worldNormal = UnpackNormal(packedNormal);
+					viewNormal = mul(UNITY_MATRIX_V, float4(worldNormal, 1.0)).xyz;
+					return LinearEyeDepth(depth) + CheckBounds(uv, depth);
+				#else
+					float depth;
+					DecodeDepthNormal(tex2D(_CameraDepthNormalsTexture, uv), depth, viewNormal);
+					return depth * _ProjectionParams.z + CheckBounds(uv, depth);
+				#endif
+			}
+
+			float4 ReconstructViewPos(float2 uv, float eyeDepth) {
+				// view space position
+				float3x3 proj = (float3x3)unity_CameraProjection;
+				float2 p11_22 = float2(unity_CameraProjection._11, unity_CameraProjection._22);
+				float2 p13_31 = float2(unity_CameraProjection._13, unity_CameraProjection._23);
+				return float4((uv * 2 - 1.0 - p13_31) / p11_22 * eyeDepth, -eyeDepth, 1);
+			}
+
 
 			fixed4 frag (v2f i) : SV_Target
 			{
 				float3 viewNormal;
 				float depth;
+				float eyeDepth;
 				
-				DecodeDepthNormal(tex2D(_CameraDepthNormalsTexture, i.uv), depth, viewNormal);
+				eyeDepth = GetViewDepthNormal(i.uv, viewNormal);
+
 				// peek depth normal
 				//return float4(depth, depth, depth, 1);
-				
-				// peek depth texture
+
+				//// peek depth texture
 				// float d2 = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv);
 				// return float4(d2, d2, d2, 1) * _AOStrength;
 
-				float eyeDepth = depth * _ProjectionParams.z;
-				
 				float4 hpos;
 				hpos.xy = i.uv * 2 - 1;
 				hpos.z = -eyeDepth;
 				hpos.w = 1;
 
 				// view space position
-				float3x3 proj = (float3x3)unity_CameraProjection;
-				float2 p11_22 = float2(unity_CameraProjection._11, unity_CameraProjection._22);
-				float2 p13_31 = float2(unity_CameraProjection._13, unity_CameraProjection._23);
-				// float4 origin = float4((hpos.xy - p13_31) / p11_22 * depth, depth, 1);
-				float4 origin = float4((hpos.xy - p13_31) / p11_22 * eyeDepth, -eyeDepth, 1);
+				float4 origin = ReconstructViewPos(i.uv, eyeDepth);
 				
 				// calculate view to tangent space transform
-				float3 noiseDir = float3(frac(i.uv.x * 3711 + i.uv.y * 1179) * 2 - 1, 
-					frac(i.uv.x * 4123 *1 + i.uv.y * 4233 + 0.124312) * 2 - 1, 0);
+				float3 noiseDir = float3(frac(i.uv.x * 12111 + i.uv.y * 111279 + frac(_Time.y) * 14117) * 2 - 1, 
+					frac(i.uv.x * 11223 *1 - i.uv.y * 12533 - frac(_Time.y) * 15129 + 0.124312) * 2 - 1, 0);
 				float3 viewTangent = normalize(noiseDir - viewNormal * dot(noiseDir, viewNormal));
 				float3 viewBinormal = cross(viewNormal, viewTangent);
 				
@@ -108,27 +147,35 @@
 					
 					float occlusionDepth;
 					float3 sampleNormal;
-					DecodeDepthNormal(tex2D(_CameraDepthNormalsTexture, sampleUV),
-						occlusionDepth, sampleNormal);
 
-					occlusionDepth = occlusionDepth * _ProjectionParams.z;
-					float td = occlusionDepth / 15;
+					occlusionDepth = GetViewDepthNormal(sampleUV, sampleNormal);
+
+					//float td = occlusionDepth / 15;
 					//return float4(td, td, td, 1);
 
 					// float td = samplePos.z * 80;
 					// return float4(td, td, td, 1);
 
-					
-					float depthRangeCheck = abs(occlusionDepth - eyeDepth) < _DepthCheckOffset ? 1.0 : 0.0;
-					occlusion += (occlusionDepth + _OcclusionOffset <= (-samplePos.z) ? 1.0 : 0.0) * depthRangeCheck;
-
+					#if defined(_MORGAN_ON)
+						float4 occluSamplePos = ReconstructViewPos(sampleUV, occlusionDepth);
+						float3 deltaPos = occluSamplePos.xyz - origin.xyz;
+						float a1 = max(dot(deltaPos, viewNormal) - 0.002 * eyeDepth - _OcclusionOffset, 0);
+						float a2 = dot(deltaPos, deltaPos) + 1e-4;
+						occlusion += a1 / a2;
+					#else
+						float depthRangeCheck = abs(occlusionDepth - eyeDepth) < _DepthCheckOffset ? 1.0 : 0.0;
+						occlusion += (occlusionDepth + _OcclusionOffset <= (-samplePos.z) ? 1.0 : 0.0) * depthRangeCheck;
+					#endif
 					/*fixed4 col_debug = 1;
 					col_debug.rgb = sampleOffset;
 					return col_debug;*/
 
 				}
-
-				fixed4 col = 1 - occlusion / KERNEL_SIZE * _AOStrength;
+				#if defined(_MORGAN_ON)
+					fixed4 col = 1 - pow(occlusion / KERNEL_SIZE * _AOStrength, _Contrast);
+				#else
+					fixed4 col = 1 - occlusion / KERNEL_SIZE * _AOStrength;
+				#endif
 				//col.rgb = _Kernel[15];
 				return col;
 			}
