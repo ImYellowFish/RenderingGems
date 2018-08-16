@@ -6,8 +6,8 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: PlanarShadow
-  m_Shader: {fileID: 4800000, guid: 3dfe09407faebb24e8005a0ace84cc3b, type: 3}
+  m_Name: PlanarShadowNoMask
+  m_Shader: {fileID: 4800000, guid: a79a8bdcf853b6d4e8462741d9ca66b9, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -62,7 +62,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _GroundHeight: 0.16
+    - _GroundHeight: 0.11
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
@@ -75,5 +75,5 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _ShadowColor: {r: 0.029411793, g: 0.00886679, b: 0.00886679, a: 1}
+    - _ShadowColor: {r: 0, g: 0, b: 0, a: 0.484}
     - _ShadowDirection: {r: 1, g: -2, b: 1, a: 0}

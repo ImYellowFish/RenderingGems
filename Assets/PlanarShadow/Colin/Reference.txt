@@ -1,0 +1,2 @@
+planar shadow by colin299
+https://forum.unity.com/threads/shader-sharing-the-most-simple-shadow-shader-planar-projection-shadowing.319830/

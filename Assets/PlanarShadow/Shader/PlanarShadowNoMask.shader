@@ -1,4 +1,4 @@
-﻿Shader "RGem/PlanarShadow"
+﻿Shader "RGem/PlanarShadowNoMask"
 {
 	Properties
 	{
@@ -9,14 +9,27 @@
 	}
 	SubShader
 	{
-		Tags { "RenderType"="Opaque" }
+		Tags { "RenderType"="Opaque" "Queue" = "Geometry+1"}
 		LOD 100
 
 		Pass
 		{
-			Name "Shadow"
+			Name "ShadowOnReceiver"
 			Cull Off
+			Blend SrcAlpha OneMinusSrcAlpha
 
+			Stencil
+			{
+				Ref 2 // project on everything but do not overlap with self
+				Comp NotEqual
+				Pass Replace
+				Fail Keep
+				ZFail Keep
+				ReadMask 2
+				WriteMask 2
+			}
+
+			
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
@@ -57,6 +70,7 @@
 
 		Pass
 		{
+			Name "TestDiffuse"
 			//// With reversed Y, Cull result will be reverted too.
 			// Cull Off
 			CGPROGRAM
