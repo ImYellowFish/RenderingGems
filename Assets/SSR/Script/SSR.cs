@@ -7,6 +7,7 @@ public class SSR : MonoBehaviour {
 
     private void OnRenderImage(RenderTexture source, RenderTexture destination)
     {
+        ssrMat.SetMatrix("_ViewMatrix", Camera.main.worldToCameraMatrix);
         Graphics.Blit(source, destination, ssrMat);
     }
 }

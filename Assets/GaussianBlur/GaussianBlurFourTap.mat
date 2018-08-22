@@ -6,8 +6,8 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: SSR
-  m_Shader: {fileID: 4800000, guid: 6dbd97e7675dbb342a78aab8745f1170, type: 3}
+  m_Name: GaussianBlurFourTap
+  m_Shader: {fileID: 4800000, guid: e6074bdcf5732a4418ca3b6e5ff9ee15, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -57,15 +57,11 @@ Material:
     m_Floats:
     - _BumpScale: 1
     - _Cutoff: 0.5
-    - _DebugVar: 1.68
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _IntersectDistMin: 0
-    - _IntersectThreshold: 0
-    - _MaxDistance: 20
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
@@ -78,3 +74,4 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _UV_Offset: {r: 0.007017544, g: 0.007017544, b: 0.007017544, a: -0.007017544}
