@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: TestGPUSkinning
+  m_Name: Ninja
   m_Shader: {fileID: 4800000, guid: 3fcc72c403a0a3d40a19fccdba01debe, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
@@ -55,11 +55,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _RotTex:
-        m_Texture: {fileID: 2800000, guid: 77e825853cb89a14f917495cac7454f7, type: 3}
+        m_Texture: {fileID: 2800000, guid: 1479b5011296bbe479cd7e6c59c01ea9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _TslTex:
-        m_Texture: {fileID: 2800000, guid: 796d8a6b7aeb64b4592525e1b2412f4b, type: 3}
+        m_Texture: {fileID: 2800000, guid: 81b7494ebc59d2348a50196b3595a34f, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
@@ -78,8 +78,8 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TexHeight: 1
-    - _TexWidth: 28
+    - _TexHeight: 32
+    - _TexWidth: 64
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:

@@ -14,8 +14,9 @@ public class SkinningBaker : MonoBehaviour {
 
 	// How to handle end frame?
 	public int sampleRate = 30;
-    public string texSavePath = "Assets/Generated/Texture/";
-    public string meshSavePath = "Assets/Generated/Mesh/";
+    public bool oneFrameOnly = false;
+    public string texSavePath = "Assets/GPUSkinning/Example/Generated/Test";
+    public string meshSavePath = "Assets/GPUSkinning/Example/Generated/Test";
 
     [ContextMenu("Play")]
 	public void Play(){
@@ -69,11 +70,22 @@ public class SkinningBaker : MonoBehaviour {
     [ContextMenu("Bake")]
 	public void Bake(){
 #if UNITY_EDITOR
-        float length = clip.length;
-		int samples = Mathf.CeilToInt(length * sampleRate);
-		float sampleInterval = 1f / sampleRate;
+        int samples = 1;
+        float length = 1.0f / sampleRate;
+
+        if (clip != null)
+        {
+            length = clip.length;
+            samples = Mathf.CeilToInt(length * sampleRate);
+        }
+
+        if(oneFrameOnly)
+            samples = 1;
+
+        float sampleInterval = 1f / sampleRate;
         int boneCount = srenderer.bones.Length;
         Debug.Log("Sample count: " + samples);
+        Debug.Log("Bone count: " + boneCount);
 
         Texture2D texTsl = new Texture2D(boneCount, samples, TextureFormat.RGBA32, false);
         Texture2D texRot = new Texture2D(boneCount, samples, TextureFormat.RGBA32, false);
@@ -82,11 +94,15 @@ public class SkinningBaker : MonoBehaviour {
 
 		for(int frame = 0; frame < samples; frame++){
 			float t = Mathf.Clamp((float)frame * sampleInterval, 0, length);
-            Debug.Log("time: " + t);
-			clip.SampleAnimation(target, t);
+            if(clip != null)
+                clip.SampleAnimation(target, t);
 
             for(int b = 0; b < boneCount; b++){
                 var bonematrix = srenderer.bones[b].localToWorldMatrix * srenderer.sharedMesh.bindposes[b];
+                bonematrix *= Matrix4x4.Scale(bonematrix.lossyScale).inverse;
+                Debug.Log(srenderer.bones[b].localToWorldMatrix);
+                Debug.Log(srenderer.sharedMesh.bindposes[b]);
+                Debug.Log(bonematrix);
                 Matrix4x4 matrix = target.transform.worldToLocalMatrix * bonematrix;
                 Vector4 translation = matrix.GetColumn(3);
                 Quaternion rotation = GetQuaternionFromMatrix(matrix);
@@ -97,7 +113,6 @@ public class SkinningBaker : MonoBehaviour {
                 stat.bones[b].rotations[frame] = new Vector4(rotation.x, rotation.y, rotation.z, rotation.w);
                 stat.bones[b].positions[frame] = new Vector4(translation.x, translation.y, translation.z, translation.w);
                 stat.bones[b].matrices[frame] = matrix;
-                Debug.Log(srenderer.bones[b].position);
             }
 		}
 
@@ -207,7 +222,7 @@ public class SkinningBaker : MonoBehaviour {
 
     private float EncodeBoneIndex(int index)
     {
-        return (index + 0.5f) / 32.0f;
+        return (index + 0.5f) / 64.0f;
     }
 
     // assume pos range from -8 ~ 8
