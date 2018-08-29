@@ -8,7 +8,8 @@
 		_RotTex("Animation Rotation Texture", 2D) = "white"{}
 		_TexWidth("Texture Width", Float) = 32
 		_TexHeight("Texture Height", Float) = 32
-		_FrameRate("Frame Rate", Range(1, 60)) = 30
+		_FrameRate("Frame Rate", Range(0, 60)) = 30
+		_BoneIndexOffset("Bone Index Offset", Float) = 0
 	}
 	SubShader
 	{
@@ -54,6 +55,7 @@
 			float _TexWidth;
 			float _TexHeight;
 			float _FrameRate;
+			float _BoneIndexOffset;
 
 			inline float3 Rotate(float3 vertex, fixed4 c_rot) {
 				float4 rot = c_rot * 2 - 1;
@@ -63,14 +65,15 @@
 			}
 
 			inline float3 Translate(float3 vertex, fixed4 c_tsl) {
-				return vertex + (c_tsl.xyz - 0.5) * 4;
+				return vertex + (c_tsl.xyz - 0.5) * 16;
 				// return vertex;
 			}
 
 			inline float3 GetSkinningPos(float time, float encodedBoneIndex, float3 vertexPos) {
 				float4 animUV;
-				animUV.x = (encodedBoneIndex * 64.0) / _TexWidth;
-				animUV.y = (time * _FrameRate - 0.5) / _TexHeight;
+				animUV.x = (encodedBoneIndex * 64.0 + _BoneIndexOffset) / _TexWidth;
+				animUV.y = 1.0 - (time * _FrameRate) / _TexHeight;
+				animUV.y = 0.1;
 				animUV.zw = 0;
 
 				fixed4 c_tsl = tex2Dlod(_TslTex, animUV);
@@ -85,13 +88,13 @@
 				float4 pos;
 				float time = _Time.y;
 				pos.xyz = lerp(GetSkinningPos(time, v.color.r, v.vertex.xyz), 
-					GetSkinningPos(time, v.color.b, v.vertex.xyz), v.color.a);
+					GetSkinningPos(time, v.color.b, v.vertex.xyz), 1.0 - v.color.g);
 				pos.w = 1;
 
 				v2f o;
 				o.vertex = UnityObjectToClipPos(pos);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				o.color = float4(0.5,0.5,0.5,1);
+				o.color = (v.color.r * 64.0 + _BoneIndexOffset) / _TexWidth;
 				o.normal = v.normal;
 
 				UNITY_TRANSFER_FOG(o,o.vertex);
@@ -101,6 +104,7 @@
 			fixed4 frag (v2f i) : SV_Target
 			{
 				// sample the texture
+				return i.color;
 				fixed4 col = abs(dot(i.normal, float3(-0.5, 1.9, 0.5))) * 0.5;
 				// fixed4 col = i.color;
 

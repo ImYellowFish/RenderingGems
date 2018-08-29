@@ -28,17 +28,58 @@ public class SkinningBaker : MonoBehaviour {
 
 	private IEnumerator PlayCoroutine(){
 		float t = 0;
-
+        Debug.Log("is humanoid:" + clip.isHumanMotion);
 		while(t < clip.length){
-			clip.SampleAnimation(target, t);
+            SampleAnimation(t);
 
-			t += Time.deltaTime;
+            t += Time.deltaTime;
 			yield return null;
 		}
 
-		clip.SampleAnimation(target, 0);
+		SampleAnimation(0);
+        SampleAnimationEnd();
 	}
     
+    private void SampleAnimation(float t)
+    {
+        if (clip == null)
+            return;
+        if (clip.isHumanMotion)
+        {
+            SetAnimationMode(true);
+            AnimationMode.SampleAnimationClip(target, clip, t);
+        }
+        else
+        {
+            clip.SampleAnimation(target, t);
+        }
+    }
+
+    private void SampleAnimationEnd()
+    {
+        if (clip == null)
+            return;
+        if (clip.isHumanMotion)
+        {
+            SetAnimationMode(false);
+        }
+    }
+
+    private void SetAnimationMode(bool enabled)
+    {
+#if UNITY_EDITOR
+        if (AnimationMode.InAnimationMode() && !enabled)
+            AnimationMode.StopAnimationMode();
+        else if(!AnimationMode.InAnimationMode() && enabled)
+            AnimationMode.StartAnimationMode();
+#endif
+    }
+
+    private int GetNextPowOf2(int a)
+    {
+        return Mathf.NextPowerOfTwo(a);
+    }
+
     [System.Serializable]
     public class DebugBoneStat
     {
@@ -77,6 +118,7 @@ public class SkinningBaker : MonoBehaviour {
         {
             length = clip.length;
             samples = Mathf.CeilToInt(length * sampleRate);
+            Debug.Log("Clip length: " + length + ", samples: " + samples);
         }
 
         if(oneFrameOnly)
@@ -87,15 +129,14 @@ public class SkinningBaker : MonoBehaviour {
         Debug.Log("Sample count: " + samples);
         Debug.Log("Bone count: " + boneCount);
 
-        Texture2D texTsl = new Texture2D(boneCount, samples, TextureFormat.RGBA32, false);
-        Texture2D texRot = new Texture2D(boneCount, samples, TextureFormat.RGBA32, false);
+        Texture2D texTsl = new Texture2D(GetNextPowOf2(boneCount), GetNextPowOf2(samples), TextureFormat.RGBA32, false);
+        Texture2D texRot = new Texture2D(GetNextPowOf2(boneCount), GetNextPowOf2(samples), TextureFormat.RGBA32, false);
 
         DebugBoneStat stat = new DebugBoneStat(samples, boneCount);
 
 		for(int frame = 0; frame < samples; frame++){
 			float t = Mathf.Clamp((float)frame * sampleInterval, 0, length);
-            if(clip != null)
-                clip.SampleAnimation(target, t);
+            SampleAnimation(t);
 
             for(int b = 0; b < boneCount; b++){
                 var bonematrix = srenderer.bones[b].localToWorldMatrix * srenderer.sharedMesh.bindposes[b];
@@ -115,6 +156,7 @@ public class SkinningBaker : MonoBehaviour {
                 stat.bones[b].matrices[frame] = matrix;
             }
 		}
+        SampleAnimationEnd();
 
 		texTsl.Apply();
 		texRot.Apply();
@@ -179,6 +221,81 @@ public class SkinningBaker : MonoBehaviour {
 #endif
     }
 
+    private GameObject testMeshGo = null;
+
+    [ContextMenu("TestMesh")]
+    public void TestMesh()
+    {
+        if (testMeshGo)
+        {
+            DestroyImmediate(testMeshGo);
+            testMeshGo = null;
+        }
+
+        int boneCount = srenderer.bones.Length;
+        var texTsl = new Texture2D(boneCount, 1, TextureFormat.RGBA32, false);
+        var texRot = new Texture2D(boneCount, 1, TextureFormat.RGBA32, false);
+        for (int b = 0; b < boneCount; b++)
+        {
+            var bonematrix = srenderer.bones[b].localToWorldMatrix * srenderer.sharedMesh.bindposes[b];
+            bonematrix *= Matrix4x4.Scale(bonematrix.lossyScale).inverse;
+            Matrix4x4 matrix = target.transform.worldToLocalMatrix * bonematrix;
+            Vector4 translation = matrix.GetColumn(3);
+            Quaternion rotation = GetQuaternionFromMatrix(matrix);
+
+            texTsl.SetPixel(b, 0, EncodeTranslation(translation));
+            texRot.SetPixel(b, 0, EncodeQuaternion(rotation));
+        }
+        texTsl.Apply();
+        texRot.Apply();
+        
+        Mesh oldMesh = srenderer.sharedMesh;
+        var vertices = oldMesh.vertices;
+        
+        for (int i = 0; i < oldMesh.boneWeights.Length; i++)
+        {
+            var v0 = vertices[i];
+            var bc = GetImportantBoneWeight(oldMesh.boneWeights[i]);
+
+            var ct = texTsl.GetPixel(Mathf.RoundToInt(bc.r * 64.0f), 0);
+            var cr = texRot.GetPixel(Mathf.RoundToInt(bc.r * 64.0f), 0);
+
+            //int bone0 = Mathf.RoundToInt(bc.r * 64.0f - 0.5f);
+            //var matrix = target.transform.worldToLocalMatrix * srenderer.bones[bone0].localToWorldMatrix * srenderer.sharedMesh.bindposes[bone0];
+            //Vector3 translation = matrix.GetColumn(3);
+            //var rotation = GetQuaternionFromMatrix(matrix);
+            //var ct = EncodeTranslation(translation);
+            //var cr = EncodeQuaternion(rotation);
+
+            var rotxyz = new Vector3(cr.r, cr.g, cr.b);
+            rotxyz = rotxyz * 2 - Vector3.one;
+            float rotw = cr.a * 2f - 1f;
+            
+
+            Vector3 v1 = v0 + 2.0f * Vector3.Cross(rotxyz, Vector3.Cross(rotxyz, v0) + rotw * v0);
+            Vector3 v2 = v1 + (new Vector3(ct.r, ct.g, ct.b) - Vector3.one * 0.5f) * 16;
+
+            // vertices[i] = matrix.MultiplyPoint(v0);
+            vertices[i] = v2;
+        }
+
+        Mesh mesh = new Mesh();
+        mesh.vertices = vertices;
+        mesh.triangles = oldMesh.triangles;
+        mesh.normals = oldMesh.normals;
+        mesh.uv = oldMesh.uv;
+
+        testMeshGo = new GameObject("TestMesh");
+        testMeshGo.hideFlags = HideFlags.DontSave;
+        var mr = testMeshGo.AddComponent<MeshRenderer>();
+        mr.material = new Material(Shader.Find("Mobile/Diffuse"));
+        var mf = testMeshGo.AddComponent<MeshFilter>();
+        mf.mesh = mesh;
+
+        DestroyImmediate(texTsl);
+        DestroyImmediate(texRot);
+    }
+
     private struct BoneIndexWeight
     {
         public int index;
@@ -222,7 +339,7 @@ public class SkinningBaker : MonoBehaviour {
 
     private float EncodeBoneIndex(int index)
     {
-        return (index + 0.5f) / 64.0f;
+        return index / 64.0f;
     }
 
     // assume pos range from -8 ~ 8
