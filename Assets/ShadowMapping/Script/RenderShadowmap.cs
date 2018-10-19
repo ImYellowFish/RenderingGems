@@ -28,15 +28,22 @@ public class RenderShadowmap : MonoBehaviour {
         shadowCamera.clearFlags = CameraClearFlags.Color;
         shadowCamera.backgroundColor = Color.white;
         shadowCamera.farClipPlane = 20;
+        shadowCamera.fieldOfView = 90;
         Shader.SetGlobalTexture("_MyShadowTex", shadowRT);
     }
 
     private void Update()
     {
+        if (outputToScreen)
+        {
+            shadowCamera.targetTexture = null;
+        }
+        else
+        {
+            shadowCamera.targetTexture = shadowRT;
+        }
         // Place the shadow camera to where the light locates
         shadowCamera.transform.SetPositionAndRotation(referenceLight.transform.position, referenceLight.transform.rotation);
-
-        Shader.SetGlobalMatrix("_MyShadowMatrixVP", GetShadowCameraVP());
     }
 
     private Matrix4x4 GetShadowCameraVP()
@@ -52,6 +59,12 @@ public class RenderShadowmap : MonoBehaviour {
             p.m11 = -p.m11;
         }
         return p * v;
+    }
+
+    private void OnPreRender()
+    {
+        shadowCamera.SetReplacementShader(shadowMaskShader, "");
+        Shader.SetGlobalMatrix("_MyShadowMatrixVP", GetShadowCameraVP());
     }
 
     //private void OnWillRenderObject()

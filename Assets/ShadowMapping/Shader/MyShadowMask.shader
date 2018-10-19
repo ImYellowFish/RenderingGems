@@ -15,6 +15,7 @@
 			#pragma fragment frag
 			
 			#include "UnityCG.cginc"
+			float4x4 _MyShadowMatrixVP;
 
 			struct appdata
 			{
@@ -24,12 +25,14 @@
 			struct v2f
 			{
 				float4 vertex : SV_POSITION;
+				float4 shadowPos : TEXCOORD1;
 			};
 
 			v2f vert (appdata v)
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.shadowPos = o.vertex;
 				return o;
 			}
 			
@@ -37,9 +40,9 @@
 			{
 				// TODO: encode depth to float
 				#if defined(UNITY_REVERSED_Z)
-					float depth = 1.0 - i.vertex.z;
+					float depth = 1.0 - i.shadowPos.z / i.shadowPos.w;
 				#else
-					float depth = i.vertex.z;
+					float depth = i.shadowPos.z / i.shadowPos.w;
 				#endif
 				return EncodeFloatRGBA(depth);
 			}

@@ -20,10 +20,15 @@ public class DebugShaderParam : MonoBehaviour {
     public Matrix4x4 mb_GPUProjection_rt;
 
     public Vector4 _ProjectionParams;
-
+    private Camera targetCamera;
     private void Start()
     {
         graphicsDeviceType = SystemInfo.graphicsDeviceType;
+        targetCamera = GetComponent<Camera>();
+        if(targetCamera == null)
+        {
+            targetCamera = Camera.main;
+        }
     }
 
     // Update is called once per frame
@@ -33,9 +38,9 @@ public class DebugShaderParam : MonoBehaviour {
         unity_CameraInvProjection = Shader.GetGlobalMatrix("unity_CameraInvProjection");
         if(glstateMatrixStage == GLStateMatrixStage.Update)
             glstate_matrix_projection = Shader.GetGlobalMatrix("glstate_matrix_projection");
-        mb_CameraProjection = Camera.main.projectionMatrix;
-        mb_GPUProjection_0 = GL.GetGPUProjectionMatrix(Camera.main.projectionMatrix, false);
-        mb_GPUProjection_rt = GL.GetGPUProjectionMatrix(Camera.main.projectionMatrix, true);
+        mb_CameraProjection = targetCamera.projectionMatrix;
+        mb_GPUProjection_0 = GL.GetGPUProjectionMatrix(targetCamera.projectionMatrix, false);
+        mb_GPUProjection_rt = GL.GetGPUProjectionMatrix(targetCamera.projectionMatrix, true);
         
 
         _ProjectionParams = Shader.GetGlobalVector("_ProjectionParams");
