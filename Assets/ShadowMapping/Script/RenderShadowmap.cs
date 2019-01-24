@@ -8,6 +8,7 @@ public class RenderShadowmap : MonoBehaviour {
     public int shadowResolution = 1024;
     public Shader shadowMaskShader;
     public bool outputToScreen;
+    public bool toggleDefaultShadow;
 
     [Header("Readonly")]
     public Camera shadowCamera;
@@ -42,6 +43,14 @@ public class RenderShadowmap : MonoBehaviour {
         {
             shadowCamera.targetTexture = shadowRT;
         }
+        if (toggleDefaultShadow)
+        {
+            GetComponent<Camera>().SetReplacementShader(Shader.Find("Mobile/Diffuse"), "");
+        }
+        else
+        {
+            GetComponent<Camera>().ResetReplacementShader();
+        }
         // Place the shadow camera to where the light locates
         shadowCamera.transform.SetPositionAndRotation(referenceLight.transform.position, referenceLight.transform.rotation);
     }
@@ -65,6 +74,7 @@ public class RenderShadowmap : MonoBehaviour {
     {
         shadowCamera.SetReplacementShader(shadowMaskShader, "");
         Shader.SetGlobalMatrix("_MyShadowMatrixVP", GetShadowCameraVP());
+        Shader.SetGlobalVector("_MyShadowLightDir", shadowCamera.transform.forward);
     }
 
     //private void OnWillRenderObject()

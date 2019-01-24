@@ -6,8 +6,8 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: ShadowReceiver
-  m_Shader: {fileID: 4800000, guid: 699e48e2553a8d749992dac9dcf6dae7, type: 3}
+  m_Name: FlowMapFur
+  m_Shader: {fileID: 4800000, guid: 62153490acd163645b1a00edd3e22031, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -38,8 +38,16 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _FlowMap:
+        m_Texture: {fileID: 2800000, guid: 2c01e2ea478853349adee57a653167bc, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FurTex:
+        m_Texture: {fileID: 2800000, guid: ca926f05c36be64478407ed94cc200a4, type: 3}
+        m_Scale: {x: 3, y: 4}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: a98a7c3e33cdd3c459e153416b1a7665, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -55,20 +63,21 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
+    - _Blur: 1
     - _BumpScale: 1
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
+    - _FlowMag: 17.8
+    - _FlowSpeed: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _Metallic: 0
     - _Mode: 0
+    - _NoiseSpeed: 0.8
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _ShadowBaseOffset: 0.0003
-    - _ShadowColor: 0.5
-    - _ShadowSlopeOffset: 0.0002
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
@@ -77,3 +86,4 @@ Material:
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _FurColor: {r: 0.88235295, g: 0.8376089, b: 0.7201557, a: 1}
