@@ -36,7 +36,10 @@
 			};
 
 			sampler2D _MainTex;
-			sampler2D _MyShadowTex;
+			
+			Texture2D _MyShadowTex;
+			SamplerState sampler_MyShadowTex;
+			
 			float4 _MainTex_ST;
 			float4 _MyShadowLightDir;
 			float4x4 _MyShadowMatrixVP;
@@ -64,7 +67,9 @@
 				#endif
 
 				float objDepth = i.shadowSpacePos.z / i.shadowSpacePos.w;
-				float shadowMapDepth = DecodeFloatRGBA(tex2D(_MyShadowTex, shadowUV));
+				float shadowMapDepth = _MyShadowTex.Sample(sampler_MyShadowTex, shadowUV); //DecodeFloatRGBA(tex2D(_MyShadowTex, shadowUV));
+				return float4(shadowMapDepth, shadowMapDepth, shadowMapDepth, 1);
+
 				#if defined(UNITY_REVERSED_Z)
 					objDepth = 1.0 - objDepth;
 				#endif
@@ -80,6 +85,6 @@
 			ENDCG
 		}
 		
-		
+		//UsePass "Legacy Shaders/VertexLit/SHADOWCASTER"
 	}
 }

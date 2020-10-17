@@ -9,6 +9,7 @@ public class RenderShadowmap : MonoBehaviour {
     public Shader shadowMaskShader;
     public bool outputToScreen;
     public bool toggleDefaultShadow;
+    public RenderTextureFormat rtFormat = RenderTextureFormat.Depth;
 
     [Header("Readonly")]
     public Camera shadowCamera;
@@ -17,8 +18,8 @@ public class RenderShadowmap : MonoBehaviour {
     private void Start()
     {
         // Allocate shadowRT;
-        shadowRT = new RenderTexture(shadowResolution, shadowResolution, 24, RenderTextureFormat.ARGB32);
-        
+        shadowRT = new RenderTexture(shadowResolution, shadowResolution, 24, rtFormat);
+        Debug.Log(shadowRT.filterMode);
         // Create shadow camera
         GameObject go = new GameObject("_ShadowCamera");
         shadowCamera = go.AddComponent<Camera>();
@@ -30,7 +31,6 @@ public class RenderShadowmap : MonoBehaviour {
         shadowCamera.backgroundColor = Color.white;
         shadowCamera.farClipPlane = 20;
         shadowCamera.fieldOfView = 90;
-        Shader.SetGlobalTexture("_MyShadowTex", shadowRT);
     }
 
     private void Update()
@@ -59,7 +59,6 @@ public class RenderShadowmap : MonoBehaviour {
     {
         Matrix4x4 v = shadowCamera.worldToCameraMatrix;
         Matrix4x4 p = shadowCamera.projectionMatrix;
-
         bool d3d = SystemInfo.graphicsDeviceVersion.IndexOf("Direct3D") > -1;
         if (d3d)
         {
@@ -72,6 +71,7 @@ public class RenderShadowmap : MonoBehaviour {
 
     private void OnPreRender()
     {
+        Shader.SetGlobalTexture("_MyShadowTex", shadowRT);
         shadowCamera.SetReplacementShader(shadowMaskShader, "");
         Shader.SetGlobalMatrix("_MyShadowMatrixVP", GetShadowCameraVP());
         Shader.SetGlobalVector("_MyShadowLightDir", shadowCamera.transform.forward);

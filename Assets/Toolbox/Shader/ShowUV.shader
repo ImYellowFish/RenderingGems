@@ -1,4 +1,4 @@
-﻿Shader "RGem/MyShadowMask"
+﻿Shader "RGem/Toolbox/ShowUV"
 {
 	Properties
 	{
@@ -10,42 +10,39 @@
 
 		Pass
 		{
-			Cull Front
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
+			// make fog work
+			#pragma multi_compile_fog
 			
 			#include "UnityCG.cginc"
-			float4x4 _MyShadowMatrixVP;
 
 			struct appdata
 			{
 				float4 vertex : POSITION;
+				float2 uv : TEXCOORD0;
 			};
 
 			struct v2f
 			{
+				float2 uv : TEXCOORD0;
 				float4 vertex : SV_POSITION;
-				float4 shadowPos : TEXCOORD1;
 			};
 
 			v2f vert (appdata v)
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
-				o.shadowPos = o.vertex;
+				o.uv = v.uv;
 				return o;
 			}
 			
-			float4 frag (v2f i) : SV_Target
+			fixed4 frag (v2f i) : SV_Target
 			{
-				// TODO: encode depth to float
-				#if defined(UNITY_REVERSED_Z)
-					float depth = 1.0 - i.shadowPos.z / i.shadowPos.w;
-				#else
-					float depth = i.shadowPos.z / i.shadowPos.w;
-				#endif
-				return float4(depth, depth, depth, 1); //EncodeFloatRGBA(depth);
+				// sample the texture
+				fixed4 col = fixed4(i.uv, 0, 1);
+				return col;
 			}
 			ENDCG
 		}

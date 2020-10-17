@@ -6,8 +6,8 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: ShadowReceiver
-  m_Shader: {fileID: 4800000, guid: 699e48e2553a8d749992dac9dcf6dae7, type: 3}
+  m_Name: LightShaftTestShadow
+  m_Shader: {fileID: 4800000, guid: 52dfdd0ec56a23840b92fb4b6fdfa4b2, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -66,9 +66,9 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0.02
-    - _ShadowBaseOffset: 0.0005
+    - _ShadowBaseOffset: 0
     - _ShadowColor: 0.5
-    - _ShadowSlopeOffset: 0.001
+    - _ShadowSlopeOffset: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
