@@ -98,19 +98,20 @@ float _TessDisplacementStrength;
 InterpolatorsVertex TestDomainProcessVertex(TessellationControlVertexData v)
 {
 	InterpolatorsVertex o;
+
+	#ifdef ENABLE_TESSELLATION_DISPLACEMENT
+		float2 displacementUV = TRANSFORM_TEX(v.uv, _TessDisplacementMap);
+		float displacement = tex2Dlod(_TessDisplacementMap, float4(displacementUV, 0, 0)).g;
+		v.vertex.xyz += v.normal * _TessDisplacementStrength * displacement;
+	#endif
+
 	o.worldPos = mul(unity_ObjectToWorld, v.vertex);
 	o.worldNormal = UnityObjectToWorldNormal(v.normal);
 	o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 	
-	#ifdef ENABLE_TESSELLATION_DISPLACEMENT
-		float2 displacementUV = TRANSFORM_TEX(v.uv, _TessDisplacementMap);
-		float displacement = tex2Dlod(_TessDisplacementMap, float4(displacementUV, 0, 0)).g;
-		o.worldPos.xyz = o.worldPos.xyz + o.worldNormal * (displacement - 0.5) * _TessDisplacementStrength;
-	#endif
-	
 	o.vertex = UnityWorldToClipPos(o.worldPos.xyz);
 
-	o.shadowCoord = mul(unity_WorldToShadow[0], o.worldPos);
+	o.shadowCoord = ComputeScreenPos(o.vertex);
 
 	return o;
 }
@@ -133,38 +134,19 @@ InterpolatorsVertex TestDomainProgram(TessellationFactors factors,
 InterpolatorsVertex TestDomainProcessVertexShadow(TessellationControlVertexData v)
 {
 	InterpolatorsVertex o;
+
+	#ifdef ENABLE_TESSELLATION_DISPLACEMENT
+		float2 displacementUV = TRANSFORM_TEX(v.uv, _TessDisplacementMap);
+		float displacement = tex2Dlod(_TessDisplacementMap, float4(displacementUV, 0, 0)).g;
+		v.vertex.xyz += v.normal * _TessDisplacementStrength * displacement;
+	#endif
+
 	o.worldPos = mul(unity_ObjectToWorld, v.vertex);
 	o.worldNormal = UnityObjectToWorldNormal(v.normal);
 	o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 	o.shadowCoord = float4(1, 1, 1, 1);
 
-#ifdef ENABLE_TESSELLATION_DISPLACEMENT
-	float2 displacementUV = TRANSFORM_TEX(v.uv, _TessDisplacementMap);
-	float displacement = tex2Dlod(_TessDisplacementMap, float4(displacementUV, 0, 0)).g;
-	o.worldPos.xyz = o.worldPos.xyz + o.worldNormal * (displacement - 0.5) * _TessDisplacementStrength;
-#endif
-	
-	float3 wPos = o.worldPos;
-	if (unity_LightShadowBias.z != 0.0)
-	{
-		float3 wNormal = UnityObjectToWorldNormal(v.normal);
-		float3 wLight = normalize(UnityWorldSpaceLightDir(wPos.xyz));
-
-		// apply normal offset bias (inset position along the normal)
-		// bias needs to be scaled by sine between normal and light direction
-		// (http://the-witness.net/news/2013/09/shadow-mapping-summary-part-1/)
-		//
-		// unity_LightShadowBias.z contains user-specified normal offset amount
-		// scaled by world space texel size.
-
-		float shadowCos = dot(wNormal, wLight);
-		float shadowSine = sqrt(1 - shadowCos * shadowCos);
-		float normalBias = unity_LightShadowBias.z * shadowSine;
-
-		wPos.xyz -= wNormal * normalBias;
-	}
-	
-	o.vertex = mul(UNITY_MATRIX_VP, float4(wPos, 1.0));
+	o.vertex = UnityClipSpaceShadowCasterPos(v.vertex.xyz, v.normal);
 	o.vertex = UnityApplyLinearShadowBias(o.vertex);
 
 	return o;

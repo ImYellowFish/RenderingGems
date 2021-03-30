@@ -62,12 +62,13 @@
 			float _WireframeWidth;
 
 			// support shadow
-			UNITY_DECLARE_SHADOWMAP(_ShadowMapTexture);
+			UNITY_DECLARE_SCREENSPACE_SHADOWMAP(_ShadowMapTexture);
 
 			#include "UnityCG.cginc"
 			#include "UnityLightingCommon.cginc"
 			#include "TessellationUtils.cginc"
 
+			#pragma multi_compile _ SHADOWS_SCREEN
 			#pragma vertex TestTessellationVertexProgram
 			#pragma fragment frag
 			#pragma hull TestHullProgram
@@ -106,7 +107,11 @@
 				float checkerboard = (frac(i.uv.x) - 0.5) * (frac(i.uv.y) - 0.5) > 0 ? 1.0 : (1 - _CheckerBoardStrength);
 
 				// shadow
-				fixed shadow = UNITY_SAMPLE_SHADOW(_ShadowMapTexture, i.shadowCoord.xyz / i.shadowCoord.w);
+				#ifdef SHADOWS_SCREEN				
+					float shadow = tex2D(_ShadowMapTexture, i.shadowCoord.xy / i.shadowCoord.w).x;
+				#else
+					float shadow = 1.0;
+				#endif
 				
 				// directional lighting
 				float3 lightDir = _WorldSpaceLightPos0.xyz - i.worldPos * _WorldSpaceLightPos0.w;
@@ -123,14 +128,12 @@
 
 		Pass
 		{
-			Name "ShadowCaster"
 			Tags { "LightMode" = "ShadowCaster" }
-
-			ZWrite On ZTest LEqual
 
 			CGPROGRAM
 
 			#pragma target 4.6 // for tessellation
+			#pragma multi_compile_shadowcaster
 			#define ENABLE_TESSELLATION_DISPLACEMENT
 
 			struct VertexData
@@ -188,7 +191,7 @@
 
 			fixed4 frag(InterpolatorsGeometry g) : SV_Target
 			{
-				return fixed4(1,1,1,1);
+				return 0;
 			}
 
 			ENDCG
