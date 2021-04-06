@@ -1,0 +1,76 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// delta position to original grid
+RWStructuredBuffer<float3> _Positions;
+RWStructuredBuffer<float3> _PrevPositions;
+RWStructuredBuffer<float3> _NextPositions;
+
+float _ParticleStep;
+float _StiffnessSelf;
+float _StiffnessNeighbor;
+float _Resolution;
+float3 _Gravity;
+float _DeltaTime;
+
+float3 GetPosition(uint3 id)
+{
+	return _Positions[id.y * _Resolution + id.x];
+}
+float3 GetPrevPosition(uint3 id)
+{
+	return _PrevPositions[id.y * _Resolution + id.x];
+}
+
+void SetPosition(float3 value, uint3 id)
+{
+	_NextPositions[id.y * _Resolution + id.x] = value;
+}
+
+float3 CalculateNeighborForce(float3 pos0, uint3 id)
+{
+	float3 pos1 = float3(0, 0, 0);
+	// negative id would be a very big value
+	if (id.x < _Resolution && id.y < _Resolution)
+	{
+		pos1 = GetPosition(id);
+	}
+	return _StiffnessNeighbor * (pos1 - pos0);
+}
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+	if (id.x < _Resolution - 1 && id.y < _Resolution - 1 && id.x >= 1 && id.y >= 1)
+	{
+		float3 pos0 = GetPosition(id);
+		float3 prevPos0 = GetPrevPosition(id);
+		
+		float3 accel = _Gravity;
+		// accel += _StiffnessSelf * (-pos0);
+		accel += CalculateNeighborForce(pos0, uint3(id.x, id.y - 1, 1));
+		accel += CalculateNeighborForce(pos0, uint3(id.x, id.y + 1, 1));
+		accel += CalculateNeighborForce(pos0, uint3(id.x + 1, id.y, 1));
+		accel += CalculateNeighborForce(pos0, uint3(id.x - 1, id.y, 1));
+		
+		accel += CalculateNeighborForce(pos0, uint3(id.x - 1, id.y - 1, 1));
+		accel += CalculateNeighborForce(pos0, uint3(id.x + 1, id.y + 1, 1));
+		accel += CalculateNeighborForce(pos0, uint3(id.x + 1, id.y - 1, 1));
+		accel += CalculateNeighborForce(pos0, uint3(id.x - 1, id.y + 1, 1));
+		
+		//accel += CalculateNeighborForce(pos0, uint3(id.x - 2, id.y, 1));
+		//accel += CalculateNeighborForce(pos0, uint3(id.x + 2, id.y, 1));
+		//accel += CalculateNeighborForce(pos0, uint3(id.x, id.y - 2, 1));
+		//accel += CalculateNeighborForce(pos0, uint3(id.x, id.y + 2, 1));
+
+
+		float3 nextPos0 = 2.0 * pos0 - prevPos0 + _DeltaTime * _DeltaTime * accel;
+		float len = length(nextPos0);
+		float3 dir = nextPos0 / len;
+		// nextPos0 = dir * min(len, _ParticleStep);
+
+		// float3 nextVelocity0 = (nextPos0 - prevPos0) / 2.0 / _DeltaTime;
+
+		SetPosition(nextPos0, id);
+	}
+}

@@ -1,0 +1,22 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+// https://catlikecoding.com/unity/tutorials/basics/compute-shaders/
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+#define PI 3.1416
+
+RWStructuredBuffer<float3> _Positions;
+float _Resolution;
+float _Time;
+float _Step;
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+	if (id.x < _Resolution && id.y < _Resolution)
+	{
+		float value = sin(PI * (id.x * _Step + id.y * _Step + _Time));
+		_Positions[id.y * _Resolution + id.x] = float3(id.x * _Step, value, id.y * _Step);
+	}
+}
